@@ -2,11 +2,11 @@
   "name": "fp-ts-task-async",
   "version": "1.0.0",
   "main": "index.js",
-    "private": true,
-    "scripts": {
-        "start": "ts-node src/Example.ts",
-        "build": "tsc --build ."
-    },
+  "private": true,
+  "scripts": {
+    "start": "ts-node src/Example.ts",
+    "build": "tsc --build ."
+  },
   "dependencies": {
     "fp-ts": "^2.9.5"
   },

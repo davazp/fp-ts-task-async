@@ -26,7 +26,7 @@ const result2 = TaskAsync(async ({fromTaskEither}) => {
 })
 
 
-// const result3: TaskEither<never, number>
+// const result3: TaskEither<string | boolean, number>
 const result3 = TaskAsync<string | boolean, number>(async ({ fromTaskEither }) => {
   const a = await fromTaskEither(returnLeft)
   const b = await fromTaskEither(returnRight)
