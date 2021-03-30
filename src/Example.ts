@@ -1,61 +1,41 @@
-import * as E from "fp-ts/Either";
-import * as TE from "fp-ts/TaskEither";
-import { fromTaskEither, TaskAsync } from "./TaskAsync";
+import * as TE from 'fp-ts/TaskEither'
+import * as E from 'fp-ts/Either'
+import {pipe} from 'fp-ts/Function'
+import { TaskAsync } from './TaskAsync'
 
-const fns: Record<string, TE.TaskEither < boolean, number>> = {
-  returnLeft: TE.left(true),
-  returnRight: TE.right(10),
-  getRejection: () => { throw 'error' }
-}
+const returnLeft: TE.TaskEither<boolean, number> = TE.left(true)
+const returnRight: TE.TaskEither<string, number> = TE.right(10)
 
+// const result1: TaskEither<string | boolean, number>
+const result1 = pipe(
+  returnLeft,
+  TE.chainW((a) =>
+    pipe(
+      returnRight,
+      TE.map((b) => a + b)
+    )
+  )
+)
 
-function runTask(id: string) {
-  return TaskAsync<boolean, number>(async () => {
+// const result2: TaskEither<unknown, unknown>
+const result2 = TaskAsync(async ({fromTaskEither}) => {
+  const a = await fromTaskEither(returnLeft)
+  const b = await fromTaskEither(returnRight)
 
-    // value is a _number_, the extracted right
-    const value = await fromTaskEither(fns[id]);
-
-    // ejecution does NOT get here if getData resolves to a Left.
-    console.log("DOES NOT HAPPEN");
-
-    return E.right(value);
-  })();
-}
-
-
-
-async function main() {
-
-  console.log('Example of a TaskAsync interrupted by a left. Note that console.log from task does not happen.')
-  runTask('returnLeft')
-    .then((either) => {
-      console.log({either})
-    })
-    .catch((err) => {
-      console.log({err})
-    });
+  return E.right(a + b)
+})
 
 
-  console.log('Example of a TaskAsync working. Note that console.log from task does not happen.')
-  runTask('returnRight')
-    .then((either) => {
-      console.log({either})
-    })
-    .catch((err) => {
-      console.log({err})
-    });
+// const result3: TaskEither<never, number>
+const result3 = TaskAsync<string | boolean, number>(async ({ fromTaskEither }) => {
+  const a = await fromTaskEither(returnLeft)
+  const b = await fromTaskEither(returnRight)
+  return E.right(a + b)
+})
 
-
-  console.log('Example of unhandled promise')
-  runTask('getRejection')
-    .then((either) => {
-      console.log({ either })
-    })
-    .catch((err) => {
-      console.log({err})
-    });
-
-}
-
-
-main()
+// FAILS TO TYPE CHECK
+const result4 = TaskAsync<string, number>(async ({ fromTaskEither }) => {
+  const a = await fromTaskEither(returnLeft)
+  const b = await fromTaskEither(returnRight)
+  return E.right(a + b)
+})
