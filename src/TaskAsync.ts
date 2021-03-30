@@ -1,11 +1,11 @@
-import { isRight, left, Either } from "fp-ts/Either";
+import { Either, isRight, left } from "fp-ts/Either";
 import { TaskEither } from "fp-ts/TaskEither";
 
 const INTERNAL_THROW = Symbol("INTERNAL_THROW");
 
-interface TaskAsyncHelper<E, A> {
-  fromTaskEither(taskEither: TaskEither<E, A>): Promise<A>;
-  fromPromise(promise: Promise<Either<E, A>>): Promise<A>;
+interface TaskAsyncHelper<E> {
+  fromTaskEither<A>(taskEither: TaskEither<E, A>): Promise<A>;
+  fromPromise<A>(promise: Promise<Either<E, A>>): Promise<A>;
 }
 
 /**
@@ -24,18 +24,18 @@ interface TaskAsyncHelper<E, A> {
  *
  */
 export function TaskAsync<E, A>(
-  fn: (helpers: TaskAsyncHelper<E, A>) => Promise<Either<E, A>>
+  fn: (helpers: TaskAsyncHelper<E>) => Promise<Either<E, A>>
 ): TaskEither<E, A> {
-  async function fromPromise<E, A>(promise: Promise<Either<E, A>>): Promise<A> {
+  async function fromPromise<A>(promise: Promise<Either<E, A>>): Promise<A> {
     const either = await promise;
     return isRight(either) ? either.right : throwTaggedLeft(either.left);
   }
 
-  function fromTaskEither<E, A>(taskEither: TaskEither<E, A>) {
+  function fromTaskEither<A>(taskEither: TaskEither<E, A>) {
     return fromPromise(taskEither());
   }
 
-  const helpers: TaskAsyncHelper<E, A> = {
+  const helpers = {
     fromPromise,
     fromTaskEither,
   };
